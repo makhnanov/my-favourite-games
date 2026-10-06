@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мои игры</title>
+<style>
+  :root { --gap: 4px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #03040a; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
+
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+  #collage {
+    position: fixed; inset: 0; margin: auto;
+    display: grid; gap: var(--gap);
+    perspective: 1200px;
+  }
+
+  .tile {
+    position: relative; overflow: hidden; border-radius: 3px;
+    background: #0b0e1a;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 6px 18px rgba(0,0,0,.6);
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s, filter .35s;
+    opacity: 0; animation: appear .8s forwards;
+    cursor: default;
+  }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s; }
+  .tile.contain { background: linear-gradient(180deg, #8fd3ff 0%, #d9f1ff 70%, #fff 100%); }
+  .tile.contain img { object-fit: contain; padding: 12%; }
+  .tile.top img { object-position: top; }
+  /* Горизонтальная картинка: целиком по центру, под ней размытая копия */
+  .tile.fit::before {
+    content: ""; position: absolute; inset: -20px;
+    background: var(--bg) center / cover; filter: blur(14px) brightness(.6);
+  }
+  .tile.fit img { position: relative; object-fit: contain; }
+
+  .tile .name {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 3px 6px; font-size: 11px; font-weight: 600; color: #e8e8f0; letter-spacing: .2px;
+    text-align: center; background: #000;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  #collage:hover .tile { filter: brightness(.55) saturate(.7); }
+  #collage .tile:hover {
+    filter: none; transform: scale(1.12); z-index: 2;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.35), 0 0 40px rgba(140,170,255,.45), 0 20px 50px rgba(0,0,0,.8);
+  }
+  .tile:hover img { transform: scale(1.04); }
+
+  /* translate/scale отдельными свойствами, чтобы анимация появления не перебивала transform при наведении */
+  @keyframes appear { from { opacity: 0; translate: 0 14px; scale: .96; } to { opacity: 1; translate: 0 0; scale: 1; } }
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div id="collage"></div>
+
+<script>
+const games = [
+  ["cs16.jpg", "Counter-Strike 1.6"],
+  ["wc3tft.jpg", "Warcraft III: The Frozen Throne"],
+  ["rust.jpg", "Rust"],
+  ["factorio.jpg", "Factorio"],
+  ["homm3.jpg", "Heroes of Might and Magic III"],
+  ["nfsu2.jpg", "Need for Speed: Underground 2"],
+  ["sims3.jpg", "The Sims 3"],
+  ["dst.jpg", "Don't Starve Together"],
+  ["diablo.png", "Diablo"],
+  ["dota2.jpg", "Dota 2"],
+  ["generals.jpg", "Command & Conquer: Generals"],
+  ["painkiller.jpg", "Painkiller"],
+  ["dorfromantik.jpg", "Dorfromantik"],
+  ["valheim.jpg", "Valheim"],
+  ["zlatogorie2.jpg", "Златогорье 2", "fit"],
+  ["cossacks.jpg", "Казаки: Европейские войны"],
+  ["crimsonland.jpg", "Crimsonland"],
+  ["civ6.jpg", "Civilization VI"],
+  ["nemesis.jpg", "Nemesis of the Roman Empire", "fit"],
+  ["punisher.jpg", "The Punisher"],
+  ["coh.jpg", "Company of Heroes"],
+  ["portroyale2.jpg", "Port Royale 2"],
+  ["terraria.jpg", "Terraria"],
+  ["lamer.png", "От ламера до хакера!", "top"],
+  ["ark.jpg", "ARK: Survival Evolved"],
+  ["stronghold.jpg", "Stronghold"],
+  ["snowrunner.jpg", "SnowRunner"],
+  ["homm5.jpg", "Heroes of Might and Magic V"],
+  ["painkiller-overdose.jpg", "Painkiller: Overdose"],
+  ["perimeter.jpg", "Периметр"],
+  ["rebelinc.jpg", "Rebel Inc: Escalation"],
+  ["plagueinc.jpg", "Plague Inc: Evolved"],
+  ["flyff.png", "Flyff — Fly For Fun", "contain"],
+  ["aletavern.jpg", "Ale & Tale Tavern"],
+];
+
+const collage = document.getElementById("collage");
+games.forEach(([file, name, cls], i) => {
+  const t = document.createElement("div");
+  t.className = "tile" + (cls ? " " + cls : "");
+  t.style.animationDelay = (i * 35) + "ms";
+  t.style.setProperty("--bg", `url("posters/${file}")`);
+  t.innerHTML = `<img src="posters/${file}" alt=""><div class="name"></div>`;
+  t.querySelector("img").alt = name;
+  t.querySelector(".name").textContent = name;
+  t.title = name;
+  collage.appendChild(t);
+});
+
+// Подбираем число колонок так, чтобы постеры 2:3 были максимально крупными и влезли в экран
+function layout() {
+  const gap = 4, pad = Math.min(innerWidth, innerHeight) * 0.04;
+  const W = innerWidth - pad * 2, H = innerHeight - pad * 2, n = games.length;
+  let best = { w: 0 };
+  for (let cols = 1; cols <= n; cols++) {
+    const rows = Math.ceil(n / cols);
+    const w = Math.min((W - gap * (cols - 1)) / cols, ((H - gap * (rows - 1)) / rows) * 2 / 3);
+    if (w > best.w) best = { w, cols, rows };
+  }
+  const w = Math.floor(best.w), h = Math.floor(w * 1.5);
+  collage.style.gridTemplateColumns = `repeat(${best.cols}, ${w}px)`;
+  collage.style.gridAutoRows = h + "px";
+  collage.style.width = (w * best.cols + gap * (best.cols - 1)) + "px";
+  collage.style.height = (h * best.rows + gap * (best.rows - 1)) + "px";
+}
+
+// Звёздное небо
+const sky = document.getElementById("sky"), ctx = sky.getContext("2d");
+let stars = [], dpr = 1;
+function makeStars() {
+  dpr = devicePixelRatio || 1;
+  sky.width = innerWidth * dpr; sky.height = innerHeight * dpr;
+  const count = Math.floor(innerWidth * innerHeight / 1800);
+  stars = Array.from({ length: count }, () => {
+    const big = Math.random() < 0.06;
+    const hue = Math.random() < 0.2 ? (Math.random() < 0.5 ? 210 : 40) : 0;
+    return {
+      x: Math.random() * sky.width, y: Math.random() * sky.height,
+      r: (big ? 1.2 + Math.random() * 1.1 : 0.3 + Math.random() * 0.8) * dpr,
+      a: 0.4 + Math.random() * 0.6, sp: 0.5 + Math.random() * 2.5, ph: Math.random() * 6.28,
+      color: hue ? `hsl(${hue},80%,85%)` : "#fff", big,
+    };
+  });
+}
+let shooting = null;
+function draw(t) {
+  const s = t / 1000;
+  const g = ctx.createRadialGradient(sky.width * .3, sky.height * .2, 0, sky.width * .5, sky.height * .5, Math.max(sky.width, sky.height) * .8);
+  g.addColorStop(0, "#141a3a"); g.addColorStop(.45, "#090c1f"); g.addColorStop(1, "#020308");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, sky.width, sky.height);
+
+  // Млечный путь — мягкая диагональная дымка
+  ctx.save();
+  ctx.translate(sky.width / 2, sky.height / 2); ctx.rotate(-0.5);
+  const mw = ctx.createLinearGradient(0, -sky.height * .25, 0, sky.height * .25);
+  mw.addColorStop(0, "rgba(120,110,200,0)"); mw.addColorStop(.5, "rgba(150,140,230,.10)"); mw.addColorStop(1, "rgba(120,110,200,0)");
+  ctx.fillStyle = mw; ctx.fillRect(-sky.width, -sky.height * .25, sky.width * 2, sky.height * .5);
+  ctx.restore();
+
+  for (const st of stars) {
+    const a = st.a * (0.55 + 0.45 * Math.sin(s * st.sp + st.ph));
+    ctx.globalAlpha = a; ctx.fillStyle = st.color;
+    ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, 6.283); ctx.fill();
+    if (st.big) {
+      ctx.globalAlpha = a * 0.35;
+      ctx.fillRect(st.x - st.r * 4, st.y - 0.5 * dpr, st.r * 8, dpr);
+      ctx.fillRect(st.x - 0.5 * dpr, st.y - st.r * 4, dpr, st.r * 8);
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // Падающая звезда
+  if (!shooting && Math.random() < 0.004) {
+    shooting = { x: Math.random() * sky.width, y: Math.random() * sky.height * .4, vx: (6 + Math.random() * 6) * dpr, vy: (2 + Math.random() * 3) * dpr, life: 1 };
+  }
+  if (shooting) {
+    const sh = shooting, len = 18;
+    const grd = ctx.createLinearGradient(sh.x, sh.y, sh.x - sh.vx * len, sh.y - sh.vy * len);
+    grd.addColorStop(0, `rgba(255,255,255,${sh.life})`); grd.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.strokeStyle = grd; ctx.lineWidth = 1.5 * dpr;
+    ctx.beginPath(); ctx.moveTo(sh.x, sh.y); ctx.lineTo(sh.x - sh.vx * len, sh.y - sh.vy * len); ctx.stroke();
+    sh.x += sh.vx; sh.y += sh.vy; sh.life -= 0.012;
+    if (sh.life <= 0) shooting = null;
+  }
+  requestAnimationFrame(draw);
+}
+
+addEventListener("resize", () => { layout(); makeStars(); });
+layout(); makeStars(); requestAnimationFrame(draw);
+</script>
+</body>
+</html>
