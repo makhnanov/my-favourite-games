@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Мои игры</title>
+<title>Romaxa Coder's Favourite Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
 <style>
   :root { --gap: 4px; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,8 +13,19 @@
 
   #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 
+  header, footer { position: fixed; left: 0; right: 0; text-align: center; z-index: 3; pointer-events: none; }
+  header { top: 0; padding: 14px 16px 10px; }
+  header h1 {
+    font-family: Orbitron, "Segoe UI", sans-serif; font-weight: 800;
+    font-size: clamp(18px, 3.2vw, 38px); letter-spacing: .08em; text-transform: uppercase;
+    background: linear-gradient(90deg, #9fb4ff, #ffffff 45%, #ffd98a);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 14px rgba(140,170,255,.45));
+  }
+  footer { bottom: 0; padding: 8px 16px 10px; font-size: 11px; color: rgba(220,225,255,.55); letter-spacing: .3px; }
+
   #collage {
-    position: fixed; inset: 0; margin: auto;
+    position: fixed; left: 0; right: 0; top: var(--top, 0); bottom: var(--bottom, 0); margin: auto;
     display: grid; gap: var(--gap);
     perspective: 1200px;
   }
@@ -56,7 +69,9 @@
 </head>
 <body>
 <canvas id="sky"></canvas>
+<header><h1>Romaxa Coder's Favourite Games</h1></header>
 <div id="collage"></div>
+<footer>Все названия, логотипы и изображения игр принадлежат их правообладателям. Сайт некоммерческий и сделан из любви к играм.</footer>
 
 <script>
 const games = [
@@ -111,8 +126,11 @@ games.forEach(([file, name, cls], i) => {
 
 // Подбираем число колонок так, чтобы постеры 2:3 были максимально крупными и влезли в экран
 function layout() {
-  const gap = 4, pad = Math.min(innerWidth, innerHeight) * 0.04;
-  const W = innerWidth - pad * 2, H = innerHeight - pad * 2, n = games.length;
+  const gap = 4, pad = Math.min(innerWidth, innerHeight) * 0.02;
+  const top = document.querySelector("header").offsetHeight, bottom = document.querySelector("footer").offsetHeight;
+  collage.style.setProperty("--top", top + "px");
+  collage.style.setProperty("--bottom", bottom + "px");
+  const W = innerWidth - pad * 2, H = innerHeight - top - bottom, n = games.length;
   let best = { w: 0 };
   for (let cols = 1; cols <= n; cols++) {
     const rows = Math.ceil(n / cols);
@@ -189,6 +207,7 @@ function draw(t) {
 
 addEventListener("resize", () => { layout(); makeStars(); });
 layout(); makeStars(); requestAnimationFrame(draw);
+document.fonts.ready.then(layout); // шрифт заголовка меняет его высоту
 </script>
 </body>
 </html>
