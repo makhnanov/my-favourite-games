@@ -11,9 +11,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: #03040a; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
 
-  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; transition: filter .35s; }
-  /* Плитка в фокусе — фон не затемняется, а, наоборот, высветляется */
-  body:has(.tile:hover) #sky, body:has(.tile:focus-visible) #sky { filter: brightness(1.6) saturate(1.1); }
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 
   header, footer { position: fixed; left: 0; right: 0; text-align: center; z-index: 3; pointer-events: none; }
   header { top: 0; padding: 14px 16px 10px; }
@@ -36,11 +34,11 @@
     position: relative; display: block; overflow: hidden; border-radius: 3px;
     background: #0b0e1a; color: inherit; text-decoration: none;
     box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 6px 18px rgba(0,0,0,.6);
-    transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s, filter .35s;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1);
     opacity: 0; animation: appear .8s forwards;
     cursor: pointer;
   }
-  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .tile.contain { background: linear-gradient(180deg, #8fd3ff 0%, #d9f1ff 70%, #fff 100%); }
   .tile.contain img { object-fit: contain; padding: 12%; }
   .tile.top img { object-position: top; }
@@ -61,12 +59,8 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  #collage:hover .tile, #collage:focus-within .tile { filter: brightness(.55) saturate(.7); }
-  #collage .tile:hover, #collage .tile:focus-visible {
-    filter: none; transform: scale(1.12); z-index: 2; outline: none;
-    box-shadow: 0 0 0 1px rgba(255,255,255,.35), 0 0 40px rgba(140,170,255,.45), 0 20px 50px rgba(0,0,0,.8);
-  }
-  .tile:hover img, .tile:focus-visible img { transform: scale(1.04); }
+  /* Единственный эффект — небольшое увеличение плитки */
+  #collage .tile:hover, #collage .tile:focus-visible { transform: scale(1.12); z-index: 2; outline: none; }
 
   /* translate/scale отдельными свойствами, чтобы анимация появления не перебивала transform при наведении */
   @keyframes appear { from { opacity: 0; translate: 0 14px; scale: .96; } to { opacity: 1; translate: 0 0; scale: 1; } }
