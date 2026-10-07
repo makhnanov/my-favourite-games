@@ -11,7 +11,9 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: #03040a; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
 
-  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; transition: filter .35s; }
+  /* Плитка в фокусе — фон не затемняется, а, наоборот, высветляется */
+  body:has(.tile:hover) #sky, body:has(.tile:focus-visible) #sky { filter: brightness(1.6) saturate(1.1); }
 
   header, footer { position: fixed; left: 0; right: 0; text-align: center; z-index: 3; pointer-events: none; }
   header { top: 0; padding: 14px 16px 10px; }
@@ -59,13 +61,6 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  /* Затемнение звёздного фона, пока плитка в фокусе */
-  #dim {
-    position: fixed; inset: 0; background: rgba(2,3,10,.72);
-    opacity: 0; transition: opacity .35s; pointer-events: none;
-  }
-  body:has(.tile:hover) #dim, body:has(.tile:focus-visible) #dim { opacity: 1; }
-
   #collage:hover .tile, #collage:focus-within .tile { filter: brightness(.55) saturate(.7); }
   #collage .tile:hover, #collage .tile:focus-visible {
     filter: none; transform: scale(1.12); z-index: 2; outline: none;
@@ -79,7 +74,6 @@
 </head>
 <body>
 <canvas id="sky"></canvas>
-<div id="dim"></div>
 <header><h1>Romaxa Coder's Favourite Games</h1></header>
 <div id="collage"></div>
 <footer>All game titles, logos and artwork are the property of their respective owners. This is a non-commercial fan page made out of love for games.</footer>
